@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>T9 Converter iOS</title>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f2f2f6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #f2f2f6;
+            padding: 44px 16px 16px;
+            text-align: center;
+            border-bottom: 1px solid #d1d1d6;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .display-area {
+            padding: 16px;
+            background-color: #fff;
+            flex-grow: 0;
+        }
+
+        .text-display {
+            background-color: #f2f2f6;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 17px;
+            margin-bottom: 8px;
+            min-height: 24px;
+            color: #000;
+            overflow-wrap: break-word;
+        }
+
+        .keyboard {
+            background-color: #d1d1d6;
+            padding: 8px;
+            flex-grow: 0;
+            margin-top: auto;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .key {
+            flex: 1;
+            margin: 0 4px;
+            height: 48px;
+            background-color: #fff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .key:active {
+            background-color: #ebebeb;
+        }
+
+        .key-number {
+            font-size: 24px;
+            font-weight: 400;
+            color: #000;
+        }
+
+        .key-letters {
+            font-size: 10px;
+            color: #8e8e93;
+            margin-top: -2px;
+        }
+
+        .action-key {
+            background-color: #acb1c2;
+        }
+
+        .action-key .key-number {
+            font-size: 16px;
+        }
+
+        .clear-button {
+            background-color: #007aff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 17px;
+            margin-top: 8px;
+            width: 100%;
+            height: 44px;
+        }
+
+        .clear-button:active {
+            background-color: #0051a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Convertisseur T9</h1>
+    </div>
+
+    <div class="display-area">
+        <div class="text-display" id="t9Input" role="textbox" aria-label="Séquence T9"></div>
+        <div class="text-display" id="textOutput" role="textbox" aria-label="Texte converti"></div>
+        <button class="clear-button" onclick="clearInput()">Effacer</button>
+    </div>
+
+    <div class="keyboard">
+        <div class="keyboard-row">
+            <div class="key" onclick="addDigit('1')">
+                <span class="key-number">1</span>
+                <span class="key-letters">&nbsp;</span>
+            </div>
+            <div class="key" onclick="addDigit('2')">
+                <span class="key-number">2</span>
+                <span class="key-letters">ABC</span>
+            </div>
+            <div class="key" onclick="addDigit('3')">
+                <span class="key-number">3</span>
+                <span class="key-letters">DEF</span>
+            </div>
+        </div>
+        <div class="keyboard-row">
+            <div class="key" onclick="addDigit('4')">
+                <span class="key-number">4</span>
+                <span class="key-letters">GHI</span>
+            </div>
+            <div class="key" onclick="addDigit('5')">
+                <span class="key-number">5</span>
+                <span class="key-letters">JKL</span>
+            </div>
+            <div class="key" onclick="addDigit('6')">
+                <span class="key-number">6</span>
+                <span class="key-letters">MNO</span>
+            </div>
+        </div>
+        <div class="keyboard-row">
+            <div class="key" onclick="addDigit('7')">
+                <span class="key-number">7</span>
+                <span class="key-letters">PQRS</span>
+            </div>
+            <div class="key" onclick="addDigit('8')">
+                <span class="key-number">8</span>
+                <span class="key-letters">TUV</span>
+            </div>
+            <div class="key" onclick="addDigit('9')">
+                <span class="key-number">9</span>
+                <span class="key-letters">WXYZ</span>
+            </div>
+        </div>
+        <div class="keyboard-row">
+            <div class="key action-key" onclick="addSpace()">
+                <span class="key-number">espace</span>
+            </div>
+            <div class="key" onclick="addDigit('0')">
+                <span class="key-number">0</span>
+                <span class="key-letters">&nbsp;</span>
+            </div>
+            <div class="key action-key" onclick="backspace()">
+                <span class="key-number">←</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const t9Dict = {
+            '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+            '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+        };
+
+        let currentSequence = '';
+        let lastDigit = '';
+        let digitCount = 0;
+        let lastDigitTime = 0;
+
+        // Empêcher le zoom sur double-tap
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // Empêcher le scroll
+        document.addEventListener('touchmove', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+
+        function t9ToText(sequence) {
+            const groups = sequence.split(' ');
+            let result = '';
+            
+            for (const group of groups) {
+                if (!group) continue;
+                
+                if (group[0] in t9Dict) {
+                    const letterGroup = t9Dict[group[0]];
+                    const position = group.length - 1;
+                    if (position < letterGroup.length) {
+                        result += letterGroup[position];
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        function addDigit(digit) {
+            const now = Date.now();
+            
+            if (digit === lastDigit && (now - lastDigitTime) < 1500) {
+                currentSequence = currentSequence.slice(0, -1);
+                digitCount = (digitCount + 1) % (t9Dict[digit]?.length || 1);
+                currentSequence += digit.repeat(digitCount + 1);
+            } else {
+                if (currentSequence && currentSequence[currentSequence.length - 1] !== ' ') {
+                    currentSequence += ' ';
+                }
+                currentSequence += digit;
+                digitCount = 0;
+            }
+            
+            lastDigit = digit;
+            lastDigitTime = now;
+            updateDisplay();
+
+            // Retour haptique
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function addSpace() {
+            if (currentSequence && currentSequence[currentSequence.length - 1] !== ' ') {
+                currentSequence += ' ';
+                updateDisplay();
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        }
+
+        function backspace() {
+            if (currentSequence.length > 0) {
+                if (currentSequence[currentSequence.length - 1] === ' ') {
+                    currentSequence = currentSequence.slice(0, -1);
+                }
+                currentSequence = currentSequence.slice(0, -1);
+                updateDisplay();
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        }
+
+        function clearInput() {
+            currentSequence = '';
+            lastDigit = '';
+            digitCount = 0;
+            updateDisplay();
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+        }
+
+        function updateDisplay() {
+            document.getElementById('t9Input').textContent = currentSequence;
+            document.getElementById('textOutput').textContent = t9ToText(currentSequence);
+        }
+    </script>
+</body>
+</html>
